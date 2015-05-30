@@ -91,9 +91,9 @@ files.each do |file|
     end
   end
   resource.files << out
-
-  File.open(resource.filename,"w") do |f|
-    f.write resource.to_s
-  end
-  puts "\n#{resource.filename} compiled."
 end
+
+File.open(resource.filename,"w") do |f|
+  f.write resource.to_s
+end
+puts "\n#{resource.filename} compiled."
