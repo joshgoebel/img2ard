@@ -1,0 +1,5 @@
+- make a gem
+- break out into sep files
+- support more than pngs
+- support greyscale
+- support bit masks
