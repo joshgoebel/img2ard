@@ -1,7 +1,7 @@
 img2ard
 =======
 
-Meant for usage with (Arduboy)[http://community.arduboy.com] and drawImage.  This tool compiles a full folder of `png` files into a single `assets.h` file of character arrays in PROGMEM suitable for passing to the core libraries drawBitmap function.
+Meant for usage with [Arduboy](http://community.arduboy.com) and drawImage.  This tool compiles a full folder of `png` files into a single `assets.h` file of character arrays in PROGMEM suitable for passing to the core libraries drawBitmap function.
 
 ## Installation
 
@@ -19,7 +19,7 @@ Yes, I need to convert this to a Ruby gem, but so much to do.
 ```
 cd source_folder
 ls assets
-./img2ard
+./img2ard.rb
 cat assets.h
 ```
 
