@@ -56,7 +56,7 @@ class ImageCharArray
       core << ", " unless i==@data.size-1
       core << "\n" if (i+1)%PER_LINE==0
     end
-    footer ="\n}\n\n"
+    footer ="\n};\n\n"
     header + core + footer
   end
 end
@@ -73,7 +73,7 @@ files.each do |file|
 
   (0..img.width - 1).each do |x|
     bytes_high = img.height / 8
-    (0..bytes_high).each do |ypage|
+    (0..bytes_high - 1).each do |ypage|
       # how many bits does this line hold
       bits = 8
       # if we've reached the bottom there are fewer bits to load
@@ -84,7 +84,7 @@ files.each do |file|
         # right now we only care about black/white so convert to greyscale
         c = ChunkyPNG::Color.grayscale_teint(px)
         if c > 0
-          byte += (1 << (7 - bit_height))
+          byte += (1 << (bit_height))
         end
       end
       out.data << byte
