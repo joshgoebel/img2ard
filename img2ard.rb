@@ -34,31 +34,55 @@ class ImageCharArray
   attr :width
   attr :height
   attr :data
+  attr :mask_data
 
   def initialize(img, name)
     @width = img.width
     @height = img.height
+    @mask = false
     @name = name
     @data = []
+    @mask_data = []
   end
 
   def variable_name
     File.basename(name,".*")
   end
 
-  def to_s
-    header = "// #{File.basename(name)} / #{width}x#{height}\n"
-    header += "PROGMEM const unsigned char #{variable_name}[] = {\n"
+  def mask_name
+    variable_name + "_mask"
+  end
+
+  def masked!
+    @mask = true
+  end
+
+  def mask?
+    @mask
+  end
+
+  def image_data(data)
     core = ""
-    @data.each_with_index do |x, i|
-      hex = x==0 ? "00" : x.to_s(16).upcase
-      point = "0x" + hex
-      core << point
-      core << ", " unless i==@data.size-1
+    data.each_with_index do |x, i|
+      hex = x.to_s(16).upcase
+      core << "0x" + (hex.length==1 ? "0" : "") + hex
+      core << ", " unless i == @data.size-1
       core << "\n" if (i+1)%PER_LINE==0
     end
-    footer ="\n};\n\n"
-    header + core + footer
+    core
+  end
+
+  def to_s
+    o = "// #{File.basename(name)} / #{width}x#{height}\n"
+    o << "PROGMEM const unsigned char #{variable_name}[] = {\n"
+    o << image_data(@data)
+    o << "\n};\n\n"
+    if mask?
+      o << "PROGMEM const unsigned char #{mask_name}[] = {\n"
+      o << image_data(@mask_data)
+      o << "\n};\n\n"
+    end
+    o
   end
 end
 
@@ -82,16 +106,24 @@ files.each do |file|
       # if we've reached the bottom there are fewer bits to load
       bits = bits_last_page if bytes_high-1==ypage and bits_last_page > 0
       byte = 0
+      alpha_byte = 0
       (0..bits-1).each do |bit_height|
         px = img[x, ypage*8 + bit_height]
         # print ChunkyPNG::Color.to_hex(px)
         # right now we only care about black/white so convert to greyscale
         c = ChunkyPNG::Color.grayscale_teint(px)
+        alpha = ChunkyPNG::Color.a(px)
+        # puts "#{c} #{alpha}"
         # puts("#{file} #{x}, #{ypage}, #{c} #{px}")
-        if c > 0
+        if c > 128
           byte += (1 << (bit_height))
         end
+        if alpha < 128
+          alpha_byte += (1 << (bit_height))
+          out.masked!
+        end
       end
+      out.mask_data << (alpha_byte ^ 0xFF)
       out.data << byte
     end
   end
