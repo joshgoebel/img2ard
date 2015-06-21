@@ -46,7 +46,7 @@ class ImageCharArray
   end
 
   def variable_name
-    File.basename(name,".*")
+    File.basename(name,".*").gsub("-","_")
   end
 
   def mask_name
