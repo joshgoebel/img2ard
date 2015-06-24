@@ -91,7 +91,7 @@ resource = AssetFile.new("assets")
 files = Dir.glob("./assets/**/*.png")
 files.each do |file|
   img = ChunkyPNG::Image.from_file(file)
-  # puts img.inspect
+  puts img.inspect
   out = ImageCharArray.new(img, file)
   puts "#{file}: #{img.width}x#{img.height}"
 
@@ -115,15 +115,16 @@ files.each do |file|
         alpha = ChunkyPNG::Color.a(px)
         # puts "#{c} #{alpha}"
         # puts("#{file} #{x}, #{ypage}, #{c} #{px}")
-        if c > 128
+        if c > 128 and not alpha < 128
           byte += (1 << (bit_height))
         end
-        if alpha < 128
+
+        if alpha > 128 # visible
           alpha_byte += (1 << (bit_height))
           out.masked!
         end
       end
-      out.mask_data << (alpha_byte ^ 0xFF)
+      out.mask_data << (alpha_byte)
       out.data << byte
     end
   end
