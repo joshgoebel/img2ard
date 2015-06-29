@@ -53,6 +53,10 @@ class ImageCharArray
     variable_name + "_mask"
   end
 
+  def plus_mask_name
+    variable_name + "_plus_mask"
+  end
+
   def masked!
     @mask = true
   end
@@ -72,6 +76,15 @@ class ImageCharArray
     core
   end
 
+  def interlace(image, mask)
+    a = []
+    while (image.size > 0)
+      a << image.shift
+      a << mask.shift
+    end
+    a
+  end
+
   def to_s
     o = "// #{File.basename(name)} / #{width}x#{height}\n"
     o << "PROGMEM const unsigned char #{variable_name}[] = {\n"
@@ -81,6 +94,11 @@ class ImageCharArray
       o << "PROGMEM const unsigned char #{mask_name}[] = {\n"
       o << image_data(@mask_data)
       o << "\n};\n\n"
+
+      o << "PROGMEM const unsigned char #{plus_mask_name}[] = {\n"
+      o << image_data(interlace(@data, @mask_data))
+      o << "\n};\n\n"
+
     end
     o
   end
@@ -91,7 +109,7 @@ resource = AssetFile.new("assets")
 files = Dir.glob("./assets/**/*.png")
 files.each do |file|
   img = ChunkyPNG::Image.from_file(file)
-  puts img.inspect
+  # puts img.inspect
   out = ImageCharArray.new(img, file)
   puts "#{file}: #{img.width}x#{img.height}"
 
