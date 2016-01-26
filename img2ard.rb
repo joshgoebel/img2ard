@@ -43,6 +43,30 @@ class ImageCharArray
     @name = name
     @data = []
     @mask_data = []
+    autodetect_frames
+  end
+
+  DIMENSION_REGEX = /[-_](\d+)x(\d+)/
+  def autodetect_frames
+    @frames = 1
+    return unless name =~ DIMENSION_REGEX
+
+    x = $1.to_i
+    y = $2.to_i
+
+    if x != width
+      fail "X size given in filename must match horizontal width of image"
+    end
+
+    if (height % y) != 0
+      fail "Y size given in filename must divide evenly into total image height"
+    end
+
+    # remove the resolution from the soruce name in our header file
+    name.gsub! DIMENSION_REGEX, ""
+
+    @frames = height / y
+    @height = y
   end
 
   def variable_name
@@ -65,15 +89,45 @@ class ImageCharArray
     @mask
   end
 
-  def image_data(data)
-    core = ""
-    data.each_with_index do |x, i|
-      hex = x.to_s(16).upcase
-      core << "0x" + (hex.length==1 ? "0" : "") + hex
-      core << ", " unless i == @data.size-1
-      core << "\n" if (i+1)%PER_LINE==0
+  def frame_data(data)
+    return [data] if @frames == 1
+
+    groups = []
+    frame_size = data.size / @frames
+    @frames.times do |i|
+      groups << data.slice(i * frame_size, frame_size)
+    end
+    groups
+  end
+
+  def image_data(all_data)
+    core = ''
+    core << resolution_data
+    frame_data(all_data).each_with_index do |data, fc|
+      core << "// frame #{fc}\n" if @frames > 1
+      data.each_with_index do |x, i|
+        hex = x.to_s(16).upcase
+        core << "0x" + (hex.length == 1 ? "0" : "") + hex
+        core << ", " unless i == @data.size - 1
+        core << "\n" if (i + 1) % PER_LINE == 0
+      end
+      core << "\n"
     end
     core
+  end
+
+  def resolution_data
+    "// width, height\n" \
+    "#{width}, #{height}\n"
+  end
+
+  def frame_count_code
+    return "" unless @frames > 1
+    "// #{@frames} frames\n"
+  end
+
+  def frames
+
   end
 
   def interlace(image, mask)
@@ -85,8 +139,15 @@ class ImageCharArray
     a
   end
 
+  def code_header
+    o = "// #{File.basename(name)}\n"
+    o << frame_count_code
+    o << "// #{width}x#{height}\n"
+    o
+  end
+
   def to_s
-    o = "// #{File.basename(name)} / #{width}x#{height}\n"
+    o = code_header
     o << "PROGMEM const unsigned char #{variable_name}[] = {\n"
     o << image_data(@data)
     o << "\n};\n\n"
