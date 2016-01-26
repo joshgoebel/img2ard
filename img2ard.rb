@@ -126,10 +126,6 @@ class ImageCharArray
     "// #{@frames} frames\n"
   end
 
-  def frames
-
-  end
-
   def interlace(image, mask)
     a = []
     while (image.size > 0)
