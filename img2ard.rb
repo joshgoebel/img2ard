@@ -118,7 +118,7 @@ class ImageCharArray
 
   def resolution_data
     "// width, height\n" \
-    "#{width}, #{height}\n"
+    "#{width}, #{height},\n"
   end
 
   def frame_count_code
