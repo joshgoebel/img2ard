@@ -146,15 +146,15 @@ class ImageCharArray
     o = code_header
     o << "PROGMEM const unsigned char #{variable_name}[] = {\n"
     o << image_data(@data)
-    o << "\n};\n\n"
+    o << "};\n\n"
     if mask?
       o << "PROGMEM const unsigned char #{mask_name}[] = {\n"
       o << image_data(@mask_data)
-      o << "\n};\n\n"
+      o << "};\n\n"
 
       o << "PROGMEM const unsigned char #{plus_mask_name}[] = {\n"
       o << image_data(interlace(@data, @mask_data))
-      o << "\n};\n\n"
+      o << "};\n\n"
 
     end
     o
