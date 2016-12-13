@@ -46,6 +46,8 @@ class ImageCharArray
     autodetect_frames
   end
 
+  
+
   DIMENSION_REGEX = /[-_](\d+)x(\d+)/
   def autodetect_frames
     @frames = 1
@@ -109,9 +111,9 @@ class ImageCharArray
         hex = x.to_s(16).upcase
         core << "0x" + (hex.length == 1 ? "0" : "") + hex
         core << ", " unless i == @data.size - 1
-        core << "\n" if (i + 1) % PER_LINE == 0
+        core << "\n" if (i + 1) % @width == 0
       end
-      core << "\n"
+
     end
     core
   end
@@ -146,15 +148,15 @@ class ImageCharArray
     o = code_header
     o << "PROGMEM const unsigned char #{variable_name}[] = {\n"
     o << image_data(@data)
-    o << "\n};\n\n"
+    o << "};\n\n"
     if mask?
       o << "PROGMEM const unsigned char #{mask_name}[] = {\n"
       o << image_data(@mask_data)
-      o << "\n};\n\n"
+      o << "};\n\n"
 
       o << "PROGMEM const unsigned char #{plus_mask_name}[] = {\n"
       o << image_data(interlace(@data, @mask_data))
-      o << "\n};\n\n"
+      o << "};\n\n"
 
     end
     o
