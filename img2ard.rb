@@ -113,7 +113,7 @@ class ImageCharArray
         core << ", " unless i == @data.size - 1
         core << "\n" if (i + 1) % @width == 0
       end
-      core << "\n"
+
     end
     core
   end
